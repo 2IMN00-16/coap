@@ -15,8 +15,9 @@ from twisted.python import log
 import txthings.resource as resource
 import txthings.coap as coap
 
+import pyhue
 
-
+bridge = pyhue.Bridge("192.168.0.101","WU9GE-SxacSwEgg1S1SzWN81hlcsuVBpZf8wBOsC")
 
 class CoreResource(resource.CoAPResource):
     """
@@ -53,7 +54,12 @@ class Lamp (resource.CoAPResource):
         self.visible = True
         self.id = lampId
         self.color = "black"
-    self.addParam(resource.LinkParam("title", "Lamp"+str(lampId)))
+        self.addParam(resource.LinkParam("title", "Lamp"+str(lampId)))
+        #bridge = pyhue.Bridge("192.168.0.101","WU9GE-SxacSwEgg1S1SzWN81hlcsuVBpZf8wBOsC")
+        self.light = bridge.get_light(lampId)
+        #self.hue = 100
+        #self.bri = 100
+        #self.sat = 100
 
     def render_GET(self,request):
         response = coap.Message(code=coap.CONTENT, payload=self.color)  #'%d' % (self.stat,))
@@ -63,13 +69,41 @@ class Lamp (resource.CoAPResource):
         print 'PUT payload: ' + request.payload
         payload = request.payload
         self.color = payload
-        
-        print 'BRIDGE CHANGE COLOR TO '+payload
-        #put the code to command bridge here
-        
+        #########################
+
+        index = payload.find ("=")
+        #if not found, later
+        attribute = payload[:index]
+        value =  payload[index+1:]
+        if attribute=="on":
+            if value == "True":
+                self.light.on = True
+                print "Turn lamp "+self.id+" ON"
+            else:
+                self.light.on = False
+                print "Turn lamp "+self.id+" OFF"
+
+        elif attribute=="hue":
+            self.light.hue = int(value)
+            print "Set hue value lamp "+self.id+" to "+ value
+
+        elif attribute=="bri":
+            self.light.bri = int(value)
+            print "Set brightness value lamp "+self.id+" to "+ value
+
+        elif attribute=="sat":
+            self.light.sat = int(value)
+            print "Set saturation value lamp "+self.id+" to "+ value
+
+        else:
+            print "Wrong query"
+
         
         response = coap.Message(code=coap.CHANGED, payload=payload)
         return defer.succeed(response)
+
+
+
 
 # Resource tree creation
 log.startLogging(sys.stdout)
@@ -85,12 +119,14 @@ well_known.putChild('core', core)
 
 ###################
 
-lamp0 = Lamp(0)
-root.putChild('lamp0',lamp0)
-
-lamp1 = Lamp(1)
+lamp1 = Lamp("1")
 root.putChild('lamp1',lamp1)
 
+lamp2 = Lamp("2")
+root.putChild('lamp2',lamp2)
+
+lamp3 = Lamp("3")
+root.putChild('lamp3',lamp3)
 ##################
 
 
