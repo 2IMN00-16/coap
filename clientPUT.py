@@ -30,8 +30,8 @@ class Agent():
         self.protocol = protocol
         #reactor.callLater(1, self.putResource)
 
-    def putResource(self,ip,color,lampId):
-        payload = color#"purple"
+    def putResource(self,ip,command,lampId):
+        payload = command#"purple"
         request = coap.Message(code=coap.PUT, payload=payload)
         request.opt.uri_path = (lampId,)#"lamp0",)
         request.opt.content_format = coap.media_types_rev['text/plain']
@@ -52,9 +52,21 @@ client = Agent(protocol)
 reactor.listenUDP(61616, protocol)
 ip='192.168.0.103'
 ##########################
-color = "red"
-lampId = "lamp0"
+'''
+The commands are similar to what HUE API provide
+"on=False/True" to turn off and on
+"hue=0-65k" to set the hue value
+"bri=0-254" to set the brightness
+"sat=0-254" to set the saturation
 
-client.putResource(ip,color,lampId)
-client.putResource(ip,"brown",lampId)
+"lampId=lamp1/2/3"
+
+all are predefined, use no space near the '='
+
+'''
+command = "on=False"
+lampId = "lamp1"
+
+client.putResource(ip,command,lampId)
+client.putResource(ip,"on=False","lamp2")
 
