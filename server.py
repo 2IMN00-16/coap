@@ -17,7 +17,7 @@ import txthings.coap as coap
 
 import pyhue
 
-bridge = pyhue.Bridge("192.168.0.101","WU9GE-SxacSwEgg1S1SzWN81hlcsuVBpZf8wBOsC")
+bridge = pyhue.Bridge("10.1.174.9","WU9GE-SxacSwEgg1S1SzWN81hlcsuVBpZf8wBOsC")
 
 class CoreResource(resource.CoAPResource):
     """
@@ -54,7 +54,7 @@ class Lamp (resource.CoAPResource):
         self.visible = True
         self.id = lampId
         self.color = "black"
-        self.addParam(resource.LinkParam("title", "Lamp"+str(lampId)))
+        #self.addParam(resource.LinkParam("title", "lamp"+str(lampId)))
         #bridge = pyhue.Bridge("192.168.0.101","WU9GE-SxacSwEgg1S1SzWN81hlcsuVBpZf8wBOsC")
         self.light = bridge.get_light(lampId)
         #self.hue = 100
@@ -115,22 +115,20 @@ root.putChild('.well-known', well_known)
 core = CoreResource(root)
 well_known.putChild('core', core)
 
-
-
 ###################
 
 lamp1 = Lamp("1")
 root.putChild('lamp1',lamp1)
 
-lamp2 = Lamp("2")
-root.putChild('lamp2',lamp2)
+#lamp2 = Lamp("2")
+#root.putChild('lamp2',lamp2)
 
-lamp3 = Lamp("3")
-root.putChild('lamp3',lamp3)
+#lamp3 = Lamp("3")
+#root.putChild('lamp3',lamp3)
 ##################
 
 
 
 endpoint = resource.Endpoint(root)
-reactor.listenUDP(coap.COAP_PORT, coap.Coap(endpoint)) #, interface="::")
+reactor.listenUDP(coap.COAP_PORT, coap.Coap(endpoint), interface="10.1.0.20")
 reactor.run()
